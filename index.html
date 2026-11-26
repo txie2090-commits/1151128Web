@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<title>ch9-2 台灣精選景點導覽 - 美化版多層級選單</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* 新增：全域樣式與頁面背景美化 */
+* {
+    box-sizing: border-box; /* 新增：讓寬度計算包含 padding 與 border，排版更精準 */
+}
+
+body {
+    margin: 0;
+    padding: 40px 20px;
+    font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif; /* 修改：改用現代無襯線字體，提升閱讀質感 */
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e0e7ff 100%); /* 新增：柔和的藍白漸層背景 */
+    min-height: 100vh; /* 新增：確保背景填滿整個視窗高度 */
+    color: #1e293b;
+}
+
+/* 新增：網頁主容器，使內容置中並呈現卡片質感 */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.85); /* 新增：半透明白色底板 */
+    backdrop-filter: blur(10px); /* 新增：毛玻璃模糊效果 */
+    padding: 30px 40px 260px; /* 新增：底部留白，避免多層子選單展開時被裁切 */
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); /* 新增：柔和立體陰影 */
+}
+
+/* 新增：標題區塊美化 */
+.header-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.header-title h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    color: #0369a1;
+    letter-spacing: 2px;
+}
+.header-title p {
+    margin: 0;
+    color: #64748b;
+    font-size: 15px;
+}
+
+/* 選單基礎重設 */
+ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.menu {
+    font-size: 18px; /* 修改：微調字體大小使比例更協調 */
+    display: flex; /* 修改：改用 Flex 排版取代 float，讓主選單自動水平置中且不需清除浮動 */
+    justify-content: center; /* 新增：主選單置中對齊 */
+    gap: 12px; /* 新增：第一層選單項目之間留出呼吸感間距 */
+}
+
+.menu > li { /* 子選擇器，只有第一層 */
+    /* 移除原本的 float: left，改由父層 .menu 的 flex 控制 */
+}
+
+.menu li {
+    position: relative;
+    padding: 0;
+    background-color: #e0f2fe; /* 新增：設定淺藍色背景，作為圖片未載入時的質感底色 */
+    border: 2px solid #0284c7; /* 修改：框線為 2px 實線，採用背景淺藍加深後的海洋藍 (#0284c7) */
+    border-radius: 5%; /* 維持：5% 圓角 */
+    min-width: 140px; /* 修改：稍微加寬以容納更舒適的內距 */
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.12); /* 新增：選單立體陰影 */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* 新增：滑鼠移入時的平滑動態過渡 */
+}
+
+.menu li:hover {
+    box-shadow: 0 6px 14px rgba(2, 132, 199, 0.25); /* 新增：滑鼠移入時陰影加深，營造浮起感 */
+}
+
+.menu ul {
+    position: absolute;
+    z-index: 10;
+    top: 105%; /* 維持：在對應上層選單下方 5% 處開始顯示 */
+    left: 5%; /* 維持：向右偏移 5% 處開始顯示 */
+    display: none; /* 預設 ul 不顯示 */
+}
+
+/* 新增：子選單內部的 li 增加微距，避免上下框線黏在一起 */
+.menu ul li {
+    margin-bottom: 4px;
+}
+
+.menu ul li > ul { /* 定義上一層 ul li 與下一層 ul 的距離 */
+    z-index: 20;
+    top: 5%; /* 維持：向下 5% 處開始顯示 */
+    left: 105%; /* 維持：向右 5% 處開始顯示 */
+}
+
+.menu a {
+    display: block;
+    padding: 12px 16px; /* 修改：增加左右內距，讓文字不擁擠 */
+    text-decoration: none;
+    text-align: center; /* 新增：文字置中對齊 */
+    font-weight: 600; /* 新增：微加粗字體提升辨識度 */
+    background-image: url(img/btn1.png); /* 保留原圖片設定，若無圖片則顯示下方漸層底色 */
+    background-size: cover;
+    color: #0c4a6e; /* 修改：改用深海藍文字取代純黑，視覺更柔和 */
+    border-radius: 5%; /* 維持：同步設定 5% 圓角 */
+    transition: background-color 0.25s ease, color 0.25s ease; /* 新增：顏色切換平滑過渡 */
+}
+
+.menu a:hover {
+    background-image: url(img/btn2.png);
+    background-color: #0284c7; /* 新增：滑鼠移入時的深藍色背景，與框線呼應 */
+    background-size: cover;
+    color: #ffffff;
+}
+
+.menu li:hover > ul {
+    display: block; /* 移動到 li，li 下一層的 ul 才顯示 */
+    animation: fadeIn 0.2s ease-in-out; /* 新增：子選單展開時的淡入動畫 */
+}
+
+/* 新增：定義子選單淡入動畫效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header-title">
+        <h1>台灣精選景點導覽</h1>
+        <p>將滑鼠移至下方地區，探索熱門景點與在地美食</p>
+    </div>
+
+    <ul class="menu">
+        <li><a href="#">台北景點</a>
+            <ul>
+                <li><a href="#">台北101</a></li>
+                <li><a href="#">迪化街</a></li>
+                <li><a href="#">士林夜市</a></li>
+            </ul>
+        </li>
+        <li><a href="#">澎湖景點</a>
+            <ul>
+                <li><a href="#">跨海大橋</a></li>
+                <li><a href="#">沙灘</a></li>
+                <li><a href="#">觀音亭</a></li>
+            </ul>
+        </li>
+        <li><a href="#">台南景點</a>
+            <ul>
+                <li><a href="#">赤崁樓</a></li>
+                <li><a href="#">台南孔廟</a></li>
+                <li><a href="#">台南小吃 &raquo;</a>
+                    <ul>
+                        <li><a href="#">八寶冰</a></li>
+                        <li><a href="#">蚵仔煎</a></li>
+                        <li><a href="#">米糕</a></li>
+                        <li><a href="#">牛肉湯</a></li>
+                        <li><a href="#">肉燥飯</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
+</body>
+</html>
